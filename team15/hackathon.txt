@@ -1,0 +1,16 @@
+Team 15 Hackathon Project
+
+Project Name:
+Deploy a Secure EC2 Web Server
+
+Team Members:
+1.R.Ruthradevi
+2.D.Madhumitha
+
+
+Description:
+Deploy a basic and secure web server using Amazon EC2 on Amazon Web Server 
+by following essential security best practices.
+
+Project PDF:
+https://drive.google.com/file/d/15Nwn96ob_f9H6efK2d_Z0wJ7WM25Q1_D/view?usp=sharing
