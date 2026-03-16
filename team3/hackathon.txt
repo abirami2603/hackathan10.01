@@ -1,0 +1,16 @@
+Team 3 Hackathon Project
+
+Project Name:
+Deploy a Secure EC2 Web Server
+
+Team Members:
+1.C.Prijeetha
+2.P.Dhanuja
+
+
+Description:
+Deploy a basic and secure web server using Amazon EC2 on Amazon Web Services
+by following essential security best practices.
+
+Project PDF:
+https://drive.google.com/file/d/138OlR_IBVP4Xr-9XNH2s8tz1FSXLMGPV/view?usp=sharing
