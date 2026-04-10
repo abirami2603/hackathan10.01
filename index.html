@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cloud Service Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050d1a;
+      --panel: #0a1628;
+      --border: #0e3a6e;
+      --accent: #00d4ff;
+      --accent2: #00ff88;
+      --accent3: #ff6b35;
+      --text: #c8e0ff;
+      --muted: #4a6a8a;
+      --danger: #ff4466;
+      --warning: #ffaa00;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,212,255,0.5);
+      letter-spacing: 2px;
+    }
+
+    .logo span { color: var(--accent2); }
+
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent2);
+      box-shadow: 0 0 8px var(--accent2);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.blue::before { background: var(--accent); }
+    .stat-card.green::before { background: var(--accent2); }
+    .stat-card.orange::before { background: var(--accent3); }
+    .stat-card.red::before { background: var(--danger); }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card.green .stat-value { color: var(--accent2); }
+    .stat-card.orange .stat-value { color: var(--accent3); }
+    .stat-card.red .stat-value { color: var(--danger); }
+
+    /* MAIN GRID */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* PANEL */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeIn 0.7s ease both;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,212,255,0.04);
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ADD SERVICE FORM */
+    .add-form {
+      padding: 20px;
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .add-form input, .add-form select {
+      background: rgba(0,212,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .add-form input { flex: 1; min-width: 140px; }
+
+    .add-form input:focus, .add-form select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+    }
+
+    .add-form select option { background: var(--panel); }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: #33ddff;
+      box-shadow: 0 0 16px rgba(0,212,255,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.65rem;
+    }
+
+    .btn-start { background: var(--accent2); color: var(--bg); }
+    .btn-start:hover { box-shadow: 0 0 12px rgba(0,255,136,0.4); }
+
+    .btn-stop { background: var(--danger); color: white; }
+    .btn-stop:hover { box-shadow: 0 0 12px rgba(255,68,102,0.4); }
+
+    .btn-delete { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-delete:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* SERVICE LIST */
+    .service-list { padding: 12px; }
+
+    .service-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      margin-bottom: 8px;
+      transition: all 0.25s;
+      animation: slideIn 0.4s ease both;
+    }
+
+    .service-item:hover {
+      border-color: var(--border);
+      background: rgba(0,212,255,0.03);
+    }
+
+    .service-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-compute { background: rgba(0,212,255,0.15); }
+    .icon-storage { background: rgba(0,255,136,0.15); }
+    .icon-database { background: rgba(255,107,53,0.15); }
+    .icon-network { background: rgba(255,170,0,0.15); }
+    .icon-security { background: rgba(255,68,102,0.15); }
+
+    .service-info { flex: 1; min-width: 0; }
+
+    .service-name {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .service-type {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .service-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .status-running {
+      color: var(--accent2);
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+
+    .status-stopped {
+      color: var(--danger);
+      background: rgba(255,68,102,0.1);
+      border: 1px solid rgba(255,68,102,0.2);
+    }
+
+    .status-pending {
+      color: var(--warning);
+      background: rgba(255,170,0,0.1);
+      border: 1px solid rgba(255,170,0,0.2);
+    }
+
+    .service-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* SIDE PANEL */
+    .side-stack { display: flex; flex-direction: column; gap: 20px; }
+
+    .activity-list { padding: 0 16px 16px; }
+
+    .activity-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(14,58,110,0.5);
+      font-size: 0.78rem;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .activity-text { color: var(--muted); line-height: 1.5; }
+    .activity-text strong { color: var(--text); }
+
+    .activity-time {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* USAGE BARS */
+    .usage-section { padding: 16px 20px; }
+
+    .usage-item { margin-bottom: 16px; }
+
+    .usage-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      margin-bottom: 6px;
+    }
+
+    .usage-label span:last-child { color: var(--accent); }
+
+    .usage-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .usage-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+    }
+
+    .fill-blue { background: linear-gradient(90deg, var(--accent), #0088ff); box-shadow: 0 0 8px rgba(0,212,255,0.4); }
+    .fill-green { background: linear-gradient(90deg, var(--accent2), #00aa55); box-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .fill-orange { background: linear-gradient(90deg, var(--accent3), #ff4400); box-shadow: 0 0 8px rgba(255,107,53,0.4); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 0.85rem; }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(0,212,255,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+
+    /* TEAM TAG */
+    .team-tag {
+      text-align: center;
+      padding: 12px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
+    }
+
+    .team-tag span { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">CLOUD<span>MGMT</span></div>
+    <div class="status-bar">
+      <div class="dot"></div>
+      <span>SYSTEM ONLINE</span>
+      <span id="clock"></span>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Services</div>
+      <div class="stat-value" id="totalCount">0</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Running</div>
+      <div class="stat-value" id="runningCount">0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Stopped</div>
+      <div class="stat-value" id="stoppedCount">0</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" id="pendingCount">0</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: SERVICE PANEL -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">⚡ Services</span>
+          <span class="badge" id="servicesBadge">0 active</span>
+        </div>
+
+        <!-- ADD FORM -->
+        <div class="add-form">
+          <input type="text" id="serviceName" placeholder="Service name..." maxlength="30"/>
+          <select id="serviceType">
+            <option value="Compute">☁️ Compute</option>
+            <option value="Storage">💾 Storage</option>
+            <option value="Database">🗄️ Database</option>
+            <option value="Network">🌐 Network</option>
+            <option value="Security">🔒 Security</option>
+          </select>
+          <button class="btn btn-primary" onclick="addService()">+ ADD</button>
+        </div>
+
+        <!-- LIST -->
+        <div class="service-list" id="serviceList">
+          <div class="empty-state">
+            <div class="empty-icon">☁️</div>
+            <p>No services yet.<br/>Add your first service above!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SIDE PANELS -->
+    <div class="side-stack">
+
+      <!-- RESOURCE USAGE -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📊 Resource Usage</span>
+        </div>
+        <div class="usage-section">
+          <div class="usage-item">
+            <div class="usage-label"><span>CPU</span><span id="cpuVal">42%</span></div>
+            <div class="usage-bar"><div class="usage-fill fill-blue" id="cpuBar" style="width:42%"></div></div>
+          </div>
+          <div class="usage-item">
+            <div class="usage-label"><span>Memory</span><span id="memVal">67%</span></div>
+            <div class="usage-bar"><div class="usage-fill fill-green" id="memBar" style="width:67%"></div></div>
+          </div>
+          <div class="usage-item">
+            <div class="usage-label"><span>Storage</span><span id="storVal">28%</span></div>
+            <div class="usage-bar"><div class="usage-fill fill-orange" id="storBar" style="width:28%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📋 Activity Log</span>
+        </div>
+        <div class="activity-list" id="activityLog">
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--accent2)"></div>
+            <div>
+              <div class="activity-text"><strong>System</strong> initialized</div>
+              <div class="activity-time">Just now</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TEAM TAG -->
+  <div class="team-tag">
+    ⚡ CODERS CLUB — Saturday Hackathon | <span>Team 13</span> | Cloud Service Management
+  </div>
+
+</div>
+
+<script>
+  let services = [
+    { id: 1, name: "Web Server", type: "Compute", status: "running" },
+    { id: 2, name: "MySQL DB", type: "Database", status: "running" },
+    { id: 3, name: "File Storage", type: "Storage", status: "stopped" },
+    { id: 4, name: "Load Balancer", type: "Network", status: "pending" },
+  ];
+
+  let nextId = 5;
+
+  const icons = {
+    Compute: { emoji: "⚙️", cls: "icon-compute" },
+    Storage: { emoji: "💾", cls: "icon-storage" },
+    Database: { emoji: "🗄️", cls: "icon-database" },
+    Network: { emoji: "🌐", cls: "icon-network" },
+    Security: { emoji: "🔒", cls: "icon-security" },
+  };
+
+  function render() {
+    const list = document.getElementById("serviceList");
+
+    if (services.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">☁️</div><p>No services yet.<br/>Add your first service above!</p></div>`;
+    } else {
+      list.innerHTML = services.map((s, i) => `
+        <div class="service-item" style="animation-delay:${i * 0.05}s">
+          <div class="service-icon ${icons[s.type].cls}">${icons[s.type].emoji}</div>
+          <div class="service-info">
+            <div class="service-name">${s.name}</div>
+            <div class="service-type">${s.type}</div>
+          </div>
+          <div class="service-status status-${s.status}">
+            ${s.status === "running" ? "● RUNNING" : s.status === "stopped" ? "■ STOPPED" : "◌ PENDING"}
+          </div>
+          <div class="service-actions">
+            ${s.status !== "running"
+              ? `<button class="btn btn-sm btn-start" onclick="toggleService(${s.id}, 'running')">▶</button>`
+              : `<button class="btn btn-sm btn-stop" onclick="toggleService(${s.id}, 'stopped')">■</button>`
+            }
+            <button class="btn btn-sm btn-delete" onclick="deleteService(${s.id})">✕</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Update stats
+    const total = services.length;
+    const running = services.filter(s => s.status === "running").length;
+    const stopped = services.filter(s => s.status === "stopped").length;
+    const pending = services.filter(s => s.status === "pending").length;
+
+    document.getElementById("totalCount").textContent = total;
+    document.getElementById("runningCount").textContent = running;
+    document.getElementById("stoppedCount").textContent = stopped;
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("servicesBadge").textContent = `${running} active`;
+
+    // Simulate resource usage change
+    const cpu = 20 + running * 8 + Math.floor(Math.random() * 5);
+    const mem = 30 + running * 7 + Math.floor(Math.random() * 5);
+    const stor = 10 + total * 4 + Math.floor(Math.random() * 3);
+
+    document.getElementById("cpuVal").textContent = cpu + "%";
+    document.getElementById("memVal").textContent = mem + "%";
+    document.getElementById("storVal").textContent = stor + "%";
+    document.getElementById("cpuBar").style.width = cpu + "%";
+    document.getElementById("memBar").style.width = mem + "%";
+    document.getElementById("storBar").style.width = stor + "%";
+  }
+
+  function addService() {
+    const name = document.getElementById("serviceName").value.trim();
+    const type = document.getElementById("serviceType").value;
+    if (!name) { alert("Service name எழுது!"); return; }
+
+    services.push({ id: nextId++, name, type, status: "pending" });
+    document.getElementById("serviceName").value = "";
+    logActivity(`<strong>${name}</strong> added as ${type}`, "var(--accent)");
+    render();
+
+    setTimeout(() => {
+      const svc = services.find(s => s.name === name);
+      if (svc && svc.status === "pending") {
+        svc.status = "running";
+        logActivity(`<strong>${name}</strong> is now Running`, "var(--accent2)");
+        render();
+      }
+    }, 2000);
+  }
+
+  function toggleService(id, newStatus) {
+    const svc = services.find(s => s.id === id);
+    if (!svc) return;
+    svc.status = newStatus;
+    logActivity(
+      `<strong>${svc.name}</strong> ${newStatus === "running" ? "started" : "stopped"}`,
+      newStatus === "running" ? "var(--accent2)" : "var(--danger)"
+    );
+    render();
+  }
+
+  function deleteService(id) {
+    const svc = services.find(s => s.id === id);
+    if (!svc) return;
+    services = services.filter(s => s.id !== id);
+    logActivity(`<strong>${svc.name}</strong> deleted`, "var(--muted)");
+    render();
+  }
+
+  function logActivity(text, color) {
+    const log = document.getElementById("activityLog");
+    const now = new Date().toLocaleTimeString();
+    const item = document.createElement("div");
+    item.className = "activity-item";
+    item.innerHTML = `
+      <div class="activity-dot" style="background:${color}"></div>
+      <div>
+        <div class="activity-text">${text}</div>
+        <div class="activity-time">${now}</div>
+      </div>
+    `;
+    log.insertBefore(item, log.firstChild);
+    if (log.children.length > 8) log.removeChild(log.lastChild);
+  }
+
+  // Clock
+  function updateClock() {
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  render();
+</script>
+</body>
+</html>

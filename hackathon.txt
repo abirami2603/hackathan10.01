@@ -1,0 +1,23 @@
+CODERS CLUB – SATURDAY HACKATHON
+=================================
+Team     : Team 13
+Project  : Cloud Service Management Dashboard
+Mode     : Hands-on Execution
+Duration : 5-6 Hours
+
+DESCRIPTION:
+A web-based dashboard to manage cloud services.
+Users can add, start, stop, and delete cloud services.
+Real-time resource usage monitoring included.
+
+TECHNOLOGIES:
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
+
+FILES:
+- index.html   → Main dashboard
+- README.md    → Documentation
+- screenshots/ → Output screenshots
+
+STATUS: Completed ✅
